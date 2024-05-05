@@ -20,11 +20,11 @@ $("a").each((index, element) => {
 });
 
 // ลบไฟล์ที่ไม่ใช่ .gitignore ในไดเรกทอรี scrap หลังจากใช้งานเสร็จ
-const files = fs.readdirSync('scrap');
+/*const files = fs.readdirSync('scrap');
 files.forEach(file => {
     if (file !== '.gitignore') {
         fs.unlinkSync(`scrap/${file}`);
     }
-});
+});*/
 
 console.log("Save File ==>  get_link/output.txt Finishing!!");
