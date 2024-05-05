@@ -1,43 +1,30 @@
-const puppeteer = require('puppeteer');
-const { minify } = require('html-minifier');
-const fs = require('fs');
+const fs = require("fs");
+const cheerio = require("cheerio");
 
-(async () => {
-    try {
-        const browser = await puppeteer.launch({ headless: false }); 
-        const page = await browser.newPage();
+// อ่านไฟล์ HTML
+const html = fs.readFileSync("./scrap/test_cut.html");
 
-        await page.goto('https://www.facebook.com/thairath', { waitUntil: 'networkidle2' });
-        await page.click('[aria-label="Close"]');
-        
-        await page.waitForSelector('body');
+// ใช้ Cheerio เพื่อแกะสลัก DOM
+const $ = cheerio.load(html);
 
-        // เริ่มการเลื่อนลงทุก 1000 มิลลิวินาที (1 วินาที)
-        const scrollInterval = setInterval(async () => {
-            await page.evaluate(() => {
-                window.scrollBy(0, window.innerHeight); // เลื่อนลง
-            });
-        }, 1000);
+// ตัวอย่างการค้นหาและดึงข้อมูล
+const title = $("title").text(); // ดึงข้อความที่อยู่ใน tag <title>
 
-        // รอเวลา 60 วินาที (1 นาที)
-        await new Promise(resolve => setTimeout(resolve, 60000));
+// เก็บข้อมูลลงในไฟล์ข้อความ (.txt)
+fs.writeFileSync("get_link/output.txt", `Title: ${title}\n`);
 
-        // หยุดการเลื่อนหน้าเว็บหลังจากเวลาที่กำหนด (1 นาที)
-        clearInterval(scrollInterval);
+// เพิ่มข้อมูลอื่น ๆ ลงในไฟล์ (.txt)
+$("a").each((index, element) => {
+    const link = $(element).attr("href");
+    fs.appendFileSync("get_link/output.txt", `Link ${index + 1}: ${link}\n`);
+});
 
-        const htmlContent = await page.content();
-        const minifiedHTML = minify(htmlContent, {
-            collapseWhitespace: true,
-            conservativeCollapse: true,
-            minifyCSS: true,
-            minifyJS: true
-        });
-
-        fs.writeFileSync('scrap/test_cut.html', minifiedHTML);
-        await browser.close();
-
-        console.log('Facebook page after login saved as facebook_after_login.html');
-    } catch (error) {
-        console.error('Error:', error);
+// ลบไฟล์ที่ไม่ใช่ .gitignore ในไดเรกทอรี scrap หลังจากใช้งานเสร็จ
+const files = fs.readdirSync('scrap');
+files.forEach(file => {
+    if (file !== '.gitignore') {
+        fs.unlinkSync(`scrap/${file}`);
     }
-})();
+});
+
+console.log("Save File ==>  get_link/output.txt Finishing!!");
