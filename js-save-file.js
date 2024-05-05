@@ -7,7 +7,7 @@ const fs = require('fs');
         const browser = await puppeteer.launch({ headless: false }); 
         const page = await browser.newPage();
 
-        await page.goto('https://www.facebook.com/aseanfootball', { waitUntil: 'networkidle2' });
+        await page.goto('https://www.facebook.com/thairath', { waitUntil: 'networkidle2' });
         await page.click('[aria-label="Close"]');
         
         await page.waitForSelector('body');

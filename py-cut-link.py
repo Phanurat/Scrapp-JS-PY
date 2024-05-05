@@ -5,10 +5,9 @@ import sys
 
 def find_similar_links(search_string, file_path):
     try:
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             file_content = file.read()
             links = re.findall(r'(https?://\S+)', file_content)
-            # เพิ่มเงื่อนไขในการค้นหาลิงก์
             similar_links = [link for link in links if search_string in link and '?comment_id=' not in link]
             return similar_links
     except FileNotFoundError:
@@ -35,21 +34,21 @@ def get_and_save_links():
     else:
         messagebox.showinfo("Error", "No similar links found.")
 
-# สร้างหน้าต่างหลัก
+# Create the main window
 root = tk.Tk()
 root.title("Cut Links")
 
-# สร้าง Label แสดงข้อความ
-label = tk.Label(root, text="Enter the search string:", padx=20, pady=10)
+# Create a label to display the message
+label = tk.Label(root, text="Enter the search string:", padx=200, pady=10)
 label.pack()
 
-# สร้างช่อง input สำหรับรับค่า search string
+# Create an input entry for the search string
 entry = tk.Entry(root)
 entry.pack()
 
-# สร้างปุ่มเพื่อค้นหาลิงก์ที่คล้ายกันและบันทึกลิงก์ที่ตัดแล้ว
+# Create a button to find similar links and save cut links
 button_cut_links = tk.Button(root, text="Cut Links", command=get_and_save_links)
 button_cut_links.pack()
 
-# เริ่มการทำงานของ GUI
+# Start the GUI operation
 root.mainloop()
