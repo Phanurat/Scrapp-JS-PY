@@ -4,10 +4,13 @@ const fs = require('fs');
 
 (async () => {
     try {
-        const browser = await puppeteer.launch({ headless: false }); 
+        // อ่าน URL จากไฟล์ text
+        const url = fs.readFileSync('url_page/url_page.txt', 'utf8').trim();
+
+        const browser = await puppeteer.launch({ headless: false }); //true = ซ่อน chrome //false = แสดงหน้าจอ chrome
         const page = await browser.newPage();
 
-        await page.goto('https://www.facebook.com/aseanfootball', { waitUntil: 'networkidle2' });
+        await page.goto(url, { waitUntil: 'networkidle2' });
         await page.click('[aria-label="Close"]');
         
         await page.waitForSelector('body');
@@ -40,4 +43,4 @@ const fs = require('fs');
     } catch (error) {
         console.error('Error:', error);
     }
-})();
+})();  
