@@ -2,31 +2,16 @@ const puppeteer = require('puppeteer');
 const { minify } = require('html-minifier');
 const fs = require('fs');
 
-(async () => {
+async function saveHTMLFromLink(linkURL, outputFilePath) {
     try {
-        // อ่าน URL จากไฟล์ text
-        const url = fs.readFileSync('url_page/url_page.txt', 'utf8').trim();
-
-        const browser = await puppeteer.launch({ headless: false }); //true = ซ่อน chrome //false = แสดงหน้าจอ chrome
+        const browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
 
-        await page.goto(url, { waitUntil: 'networkidle2' });
+        console.log('Processing Working!!! ....');
+
+        await page.goto(linkURL, { waitUntil: 'networkidle2' });
         await page.click('[aria-label="Close"]');
-        
-        await page.waitForSelector('body');
-
-        // เริ่มการเลื่อนลงทุก 1000 มิลลิวินาที (1 วินาที)
-        const scrollInterval = setInterval(async () => {
-            await page.evaluate(() => {
-                window.scrollBy(0, window.innerHeight); // เลื่อนลง
-            });
-        }, 1000);
-
-        // รอเวลา 60 วินาที (1 นาที)
-        await new Promise(resolve => setTimeout(resolve, 60000));
-
-        // หยุดการเลื่อนหน้าเว็บหลังจากเวลาที่กำหนด (1 นาที)
-        clearInterval(scrollInterval);
+        await page.waitForNavigation(); // Wait for navigation after clicking close button
 
         const htmlContent = await page.content();
         const minifiedHTML = minify(htmlContent, {
@@ -36,11 +21,39 @@ const fs = require('fs');
             minifyJS: true
         });
 
-        fs.writeFileSync('scrap/test_cut.html', minifiedHTML);
+        fs.writeFileSync(outputFilePath, minifiedHTML);
         await browser.close();
 
-        console.log('Facebook page after login saved as facebook_after_login.html');
+        console.log(`บันทึก HTML POST ไปยัง ${outputFilePath} เรียบร้อยแล้ว`);
     } catch (error) {
-        console.error('Error:', error);
+        console.error('เกิดข้อผิดพลาด:', error);
     }
-})();  
+}
+
+async function processLinks() {
+    const linkDirectory = 'link_post';
+    const contentDirectory = 'html_post';
+
+    if (!fs.existsSync(contentDirectory)) {
+        fs.mkdirSync(contentDirectory);
+    }
+
+    const linkFiles = fs.readdirSync(linkDirectory);
+
+    if (linkFiles.length === 0) {
+        console.log('ไม่มีไฟล์ในโฟลเดอร์ link_post');
+        return;
+    }
+
+    for (const linkFile of linkFiles) {
+        const linkFilePath = `${linkDirectory}/${linkFile}`;
+        const linkURL = fs.readFileSync(linkFilePath, 'utf8').trim();
+
+        const index = linkFile.split('.')[0].replace('link', '');
+        const outputFilePath = `${contentDirectory}/content${index}_post.html`;
+
+        await saveHTMLFromLink(linkURL, outputFilePath);
+    }
+}
+
+processLinks();
